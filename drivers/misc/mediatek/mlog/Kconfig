@@ -1,5 +1,5 @@
 config MTK_MLOG
 	bool "Support memory log"
-	default y
+	default n
 	help
           log memory info to kernel buffer.
