@@ -20,7 +20,7 @@
 
 		/* chosen */
 		chosen {
-		bootargs = "console=tty0 console=ttyMT0,921600n1 root=/dev/ram initrd=0x84000000,0x400000 loglevel=8";
+		bootargs = "root=/dev/ram initrd=0x84000000,0x400000 loglevel=8";
 		};
 
 /* Do not put any bus before mtk-msdc, because it should be mtk-msdc.0 for partition device node usage */
