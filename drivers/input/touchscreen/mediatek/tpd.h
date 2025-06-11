@@ -21,10 +21,10 @@
 /*#define TPD_DEBUG */
 #define TPD_DEBUG_CODE
 /* #define TPD_DEBUG_TRACK */
-#define TPD_DMESG(a, arg...) pr_info(TPD_DEVICE ": " a, ##arg)
+#define TPD_DMESG(a, arg...) pr_debug(TPD_DEVICE ": " a, ##arg)
 #if defined(TPD_DEBUG)
 #undef TPD_DEBUG
-#define TPD_DEBUG(a, arg...) pr_info(TPD_DEVICE ": " a, ##arg)
+#define TPD_DEBUG(a, arg...) pr_debug(TPD_DEVICE ": " a, ##arg)
 #else
 #define TPD_DEBUG(arg...)
 #endif
@@ -87,6 +87,11 @@ struct tpd_device {
 	struct timer_list timer;
 	struct tasklet_struct tasklet;
 	int btn_state;
+	#if defined (CONFIG_HW_INFO)
+	unsigned char *tp_firmware_version;//20160310 liujunting add for hardwareinfo
+	int tp_vendor_id;//20160310 liujunting add for hardwareinfo
+	#endif
+
 };
 struct tpd_key_dim_local {
 	int key_x;

@@ -132,6 +132,11 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 #define OV7675_SENSOR_ID                        0x7673
 #define OV5693_SENSOR_ID                        0x5690
 #define OV5670MIPI_SENSOR_ID                    0x5670
+// add second camera code for pixi4_5 by duanjinhui.wt at 20160309
+#define OV5670MIPI_BACKAF_SENSOR_ID             0x5670
+#define OV5670MIPI_BACKFF_SENSOR_ID             0x5671
+#define OV5670MIPI_FRONT_SENSOR_ID              0x5672
+//end by duanjinhui.wt
 #define OV5671MIPI_SENSOR_ID                    0x5671
 #define OV5650_SENSOR_ID                        0x5651
 #define OV5650MIPI_SENSOR_ID                    0x5651
@@ -175,6 +180,13 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 #define S5K5CAGX_SENSOR_ID                      0x05ca
 #define S5K8AAYX_MIPI_SENSOR_ID                 0x08aa
 #define S5K8AAYX_SENSOR_ID                      0x08aa
+#define S5K5E8YX_SENSOR_ID                      0x5e80
+//Start:liuyang.wt,ADD,20151215,camera for pixi4-5
+#define S5K5E8YX_SENSOR_ID_BACK_AF                      0x5e80
+#define S5K5E8YX_SENSOR_ID_BACK_FF                      0x5e81
+#define S5K5E8YX_SENSOR_ID_FRONT                      0x5e82
+//End
+
 /*HI*/
 #define HI841_SENSOR_ID                         0x0841
 #define HI707_SENSOR_ID                         0x00b8
@@ -214,7 +226,9 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 #define MT9P017MIPI_SENSOR_ID                   0x4800
 #define MT9T113MIPI_SENSOR_ID                   0x4680
 /*GC*/
-#define GC2355_SENSOR_ID                        0x2355
+/*Begin ersen.shang modify GC2355_SENSOR_ID to 0x2355+1 for gc2355 as rear and front camera on pixi4-4*/
+#define GC2355_SENSOR_ID                        (0x2355+1)
+/*End   ersen.shang modify GC2355_SENSOR_ID to 0x2355+1 for gc2355 as rear and front camera on pixi4-4*/
 #define GC2235_SENSOR_ID                        0x2235
 #define GC2035_SENSOR_ID                        0x2035
 #define GC2145_SENSOR_ID                        0x2145
@@ -223,9 +237,23 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 #define GC0310_SENSOR_ID                        0xa310
 #define GC0313MIPI_YUV_SENSOR_ID                0xD0
 #define GC0312_SENSOR_ID                        0xb310
+#define GC2355_FRONT_SENSOR_ID                  0x2355
+// add second camera code for pixi4_5 by duanjinhui.wt at 20160309
+#define GC2355MIPI_FRONT_SENSOR_ID              0x2355
+// end by duanjinhui.wt
+// add new second camera code for pixi4_5 by duanjinhui.wt at 20160604
+#define GC5005MIPI_BACKAF_SENSOR_ID             0x5005
+#define GC5005MIPI_BACKFF_SENSOR_ID             0x5006
+#define GC5005MIPI_FRONT_SENSOR_ID              0x5007
+// end by duanjinhui.wt
 /*SP*/
 #define SP0A19_YUV_SENSOR_ID                    0xA6
 #define SP2518_YUV_SENSOR_ID                    0x53
+#define SP2508_MIPI_RAW_SENSOR_ID               0x2509
+//Start:liuyang.wt,ADD,20151215,camera for pixi4-5
+#define SP2508_FRONT_SENSOR_ID                  0x2508
+//End
+
 /*A*/
 #define A5141MIPI_SENSOR_ID                     0x4800
 #define A5142MIPI_SENSOR_ID                     0x4800
@@ -257,6 +285,9 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 /*Others*/
 #define SHARP3D_SENSOR_ID                       0x003d
 #define T8EV5_SENSOR_ID                         0x1011
+// add second camera code for pixi4_5 by duanjinhui.wt at 20160319
+#define C2590MIPI_FRONT_SENSOR_ID               0x0202
+// end by duanjinhui.wt
 
 /* CAMERA DRIVER NAME */
 #define CAMERA_HW_DEVNAME                       "kd_camera_hw"
@@ -295,6 +326,11 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 #define SENSOR_DRVNAME_OV7675_YUV               "ov7675yuv"
 #define SENSOR_DRVNAME_OV5693_MIPI_RAW          "ov5693mipi"
 #define SENSOR_DRVNAME_OV5670_MIPI_RAW          "ov5670mipiraw"
+// add second camera code for pixi4_5 by duanjinhui.wt at 20160309
+#define SENSOR_DRVNAME_OV5670_BACKAF_MIPI_RAW   "ov5670backafmipiraw"
+#define SENSOR_DRVNAME_OV5670_BACKFF_MIPI_RAW   "ov5670backffmipiraw"
+#define SENSOR_DRVNAME_OV5670_FRONT_MIPI_RAW    "ov5670frontmipiraw"
+// end by duanjinhui.wt
 #define SENSOR_DRVNAME_OV5671_MIPI_RAW          "ov5671mipiraw"
 #define SENSOR_DRVNAME_OV5647MIPI_RAW           "ov5647mipiraw"
 #define SENSOR_DRVNAME_OV5645_MIPI_YUV          "ov5645_mipi_yuv"
@@ -331,6 +367,13 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 #define SENSOR_DRVNAME_S5K5E2YA_MIPI_RAW        "s5k5e2yamipiraw"
 #define SENSOR_DRVNAME_S5K8AAYX_MIPI_YUV        "s5k8aayxmipiyuv"
 #define SENSOR_DRVNAME_S5K8AAYX_YUV             "s5k8aayxyuv"
+#define SENSOR_DRVNAME_S5K5E8YX_MIPI_RAW        "s5k5e8yxmipiraw"
+//Start:liuyang.wt,ADD,20151215,camera for pixi4-5
+#define SENSOR_DRVNAME_S5K5E8YX_MIPI_RAW_BACK_AF        "s5k5e8yxmipiraw_back_af"
+#define SENSOR_DRVNAME_S5K5E8YX_MIPI_RAW_BACK_FF        "s5k5e8yxmipiraw_back_ff"
+#define SENSOR_DRVNAME_S5K5E8YX_MIPI_RAW_FRONT        "s5k5e8yxmipiraw_front"
+//End
+
 /*HI*/
 #define SENSOR_DRVNAME_HI841_MIPI_RAW           "hi841mipiraw"
 #define SENSOR_DRVNAME_HI707_YUV                "hi707yuv"
@@ -357,6 +400,7 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 #define SENSOR_DRVNAME_GC2035_YUV               "gc2035_yuv"
 #define SENSOR_DRVNAME_GC2235_RAW               "gc2235_raw"
 #define SENSOR_DRVNAME_GC2355_MIPI_RAW          "gc2355mipiraw"
+#define SENSOR_DRVNAME_GC2355_MIPI_RAW_FRONT    "gc2355mipirawfront"
 #define SENSOR_DRVNAME_GC0330_YUV               "gc0330_yuv"
 #define SENSOR_DRVNAME_GC0329_YUV               "gc0329yuv"
 #define SENSOR_DRVNAME_GC2145_MIPI_YUV          "gc2145mipiyuv"
@@ -364,9 +408,22 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 #define SENSOR_DRVNAME_GC0310_YUV               "gc0310yuv"
 #define SENSOR_DRVNAME_GC0312_YUV               "gc0312yuv"
 #define SENSOR_DRVNAME_GC0313MIPI_YUV           "gc0313mipiyuv"
+// add second camera code for pixi4_5 by duanjinhui.wt at 20160309
+#define SENSOR_DRVNAME_GC2355_FRONT_MIPI_RAW    "gc2355frontmipiraw"
+// end by duanjinhui.wt 
+// add new second camera code for pixi4_5 by duanjinhui.wt at 20160604
+#define SENSOR_DRVNAME_GC5005_BACKAF_MIPI_RAW   "gc5005backafmipiraw"
+#define SENSOR_DRVNAME_GC5005_BACKFF_MIPI_RAW   "gc5005backffmipiraw"
+#define SENSOR_DRVNAME_GC5005_FRONT_MIPI_RAW    "gc5005frontmipiraw"
+// end by duanjinhui.wt
 /*SP*/
 #define SENSOR_DRVNAME_SP0A19_YUV               "sp0a19yuv"
 #define SENSOR_DRVNAME_SP2518_YUV               "sp2518yuv"
+#define SENSOR_DRVNAME_SP2508_MIPI_RAW          "sp2508mipiraw"
+//Start:liuyang.wt,ADD,20151216,camera for pixi4-5
+#define SENSOR_DRVNAME_SP2508_FRONT_MIPI_RAW    "sp2508mipiraw"
+//End
+
 /*A*/
 #define SENSOR_DRVNAME_A5141_MIPI_RAW           "a5141mipiraw"
 #define SENSOR_DRVNAME_A5142_MIPI_RAW           "a5142mipiraw"
@@ -386,6 +443,9 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 /*Others*/
 #define SENSOR_DRVNAME_SHARP3D_MIPI_YUV         "sharp3dmipiyuv"
 #define SENSOR_DRVNAME_T8EV5_YUV                "t8ev5_yuv"
+// add second camera code for pixi4_5 by duanjinhui.wt at 20160319
+#define SENSOR_DRVNAME_C2590_FRONT_MIPI_RAW     "c2590frontmipiraw"
+// end by duanjinhui.wt 
 /*Test*/
 #define SENSOR_DRVNAME_IMX135_MIPI_RAW_5MP      "imx135mipiraw5mp"
 

@@ -10,7 +10,6 @@ media-objs	:= media-device.o media-devnode.o media-entity.o
 #
 obj-y += i2c/ tuners/
 obj-$(CONFIG_DVB_CORE)  += dvb-frontends/
-
 #
 # Now, let's link-in the media core
 #

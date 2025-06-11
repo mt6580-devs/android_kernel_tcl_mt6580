@@ -344,7 +344,11 @@ static struct platform_driver tpd_driver = {
 			.of_match_table = touch_of_match,
 	},
 };
+#if defined (CONFIG_HW_INFO) 
+struct tpd_driver_t *g_tpd_drv;//add by xiaopu.zhu
+#else
 static struct tpd_driver_t *g_tpd_drv;
+#endif
 /* hh: use fb_notifier */
 static struct notifier_block tpd_fb_notifier;
 /* use fb_notifier */

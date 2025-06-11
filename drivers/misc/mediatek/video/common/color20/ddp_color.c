@@ -1364,9 +1364,15 @@ static unsigned int color_is_reg_addr_valid(unsigned long addr)
 {
 	unsigned int i = 0;
 
+	if ((addr & 0x3) != 0) {
+		COLOR_ERR("color_is_reg_addr_valid, addr is not 4-byte aligned!\n");
+		return 0;
+	}
+
 	for (i = 0; i < DISP_REG_NUM; i++) {
-		if ((addr >= dispsys_reg[i]) && (addr < (dispsys_reg[i] + 0x1000)))
+		if ((addr >= dispsys_reg[i]) && (addr < (dispsys_reg[i] + 0x1000)) && (dispsys_reg[i] != 0)) {
 			break;
+		}
 	}
 
 	if (i < DISP_REG_NUM) {
@@ -2138,11 +2144,12 @@ static int _color_io(DISP_MODULE_ENUM module, int msg, unsigned long arg, void *
 #ifdef CONFIG_FOR_SOURCE_PQ
 void set_color_bypass(DISP_MODULE_ENUM module, int bypass, void *cmdq_handle)
 {
+	int offset = C0_OFFSET;
+
 #ifdef DISP_COLOR_OFF
 	COLOR_NLOG("set_color_bypass: DISP_COLOR_OFF, Color bypassed...\n");
 	return;
 #endif
-	int offset = C0_OFFSET;
 
 	g_color_bypass = bypass;
 
@@ -2174,11 +2181,12 @@ void set_color_bypass(DISP_MODULE_ENUM module, int bypass, void *cmdq_handle)
 
 static int _color_bypass(DISP_MODULE_ENUM module, int bypass)
 {
+	int offset = C0_OFFSET;
+
 #ifdef DISP_COLOR_OFF
 	COLOR_NLOG("_color_bypass: DISP_COLOR_OFF, Color bypassed...\n");
 	return -1;
 #endif
-	int offset = C0_OFFSET;
 
 	g_color_bypass = bypass;
 

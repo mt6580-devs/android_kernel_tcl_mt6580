@@ -4,7 +4,9 @@
 
 struct acc_context *acc_context_obj = NULL;
 
-
+#if defined (CONFIG_HW_INFO) 
+extern char *g_gsensor_name;//add by xiaopu.zhu
+#endif
 static struct acc_init_info *gsensor_init_list[MAX_CHOOSE_G_NUM] = { 0 };
 
 static int64_t getCurNS(void)
@@ -499,6 +501,10 @@ static int acc_real_driver_init(void)
 			if (0 == err) {
 				ACC_LOG(" acc real driver %s probe ok\n",
 					gsensor_init_list[i]->name);
+//add by xiaopu.zhu
+#if defined (CONFIG_HW_INFO) 
+				g_gsensor_name = gsensor_init_list[i]->name;
+#endif
 				break;
 			}
 		}

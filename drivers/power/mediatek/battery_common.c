@@ -75,6 +75,8 @@
 #include <mach/mt_pmic.h>
 
 
+#define HIGH_BATTERY_VOLTAGE_SUPPORT
+
 #if defined(CONFIG_MTK_DUAL_INPUT_CHARGER_SUPPORT)
 #include <mach/diso.h>
 #endif
@@ -230,6 +232,10 @@ int g_present_smb = 0;
 static int cmd_discharging = -1;
 static int adjust_power = -1;
 static int suspend_discharging = -1;
+
+#if !defined(CONFIG_POWER_EXT)
+static int is_uisoc_ever_100 = KAL_FALSE;
+#endif
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* FOR ANDROID BATTERY SERVICE */
@@ -416,7 +422,8 @@ void wake_up_bat(void)
 #ifdef MTK_ENABLE_AGING_ALGORITHM
 	suspend_time = 0;
 #endif
-	_g_bat_sleep_total_time = 0;
+	battery_meter_reset_sleep_time();
+
 	wake_up(&bat_thread_wq);
 }
 EXPORT_SYMBOL(wake_up_bat);
@@ -433,11 +440,25 @@ void wake_up_bat2(void)
 #ifdef MTK_ENABLE_AGING_ALGORITHM
 	suspend_time = 0;
 #endif
-	_g_bat_sleep_total_time = 0;
+	battery_meter_reset_sleep_time();
 	wake_up(&bat_thread_wq);
 }
 EXPORT_SYMBOL(wake_up_bat2);
 #endif				/* #ifdef FG_BAT_INT */
+
+void wake_up_bat3(void)
+{
+	battery_log(BAT_LOG_CRTI, "[BATTERY] wake_up_bat3. \r\n");
+
+	bat_thread_timeout = KAL_TRUE;
+#ifdef MTK_ENABLE_AGING_ALGORITHM
+	suspend_time = 0;
+#endif
+	battery_meter_reset_sleep_time();
+	wake_up(&bat_thread_wq);
+}
+EXPORT_SYMBOL(wake_up_bat3);
+
 
 
 
@@ -707,6 +728,20 @@ static struct battery_data battery_main = {
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
 /* // Create File For EM : ADC_Charger_Voltage */
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
+//jiangjingjing-modify-20151027-begin-Task 811552
+//jiangjingjing-add-for-GCF-20151125-begin-task 979293
+#ifndef TARGET_BUILD_GCF 
+ #if defined(CONFIG_BATT_ID_CHECK_SUPPORT)
+static ssize_t show_Battery_Id(struct device *dev,struct device_attribute *attr, char *buf)
+{
+     battery_log(BAT_LOG_CRTI, "[EM] Battery_ID : %d\n", BMT_status.id_vol);
+    return sprintf(buf, "%d\n", BMT_status.id_vol);
+}
+static DEVICE_ATTR(Battery_Id, 0664, show_Battery_Id, NULL);
+#endif
+//jiangjingjing-modify-20151027-end--Task 811552
+#endif
+//jiangjingjing-add-for-GCF-20151125-end-task 979293
 static ssize_t show_ADC_Charger_Voltage(struct device *dev, struct device_attribute *attr,
 					char *buf)
 {
@@ -722,6 +757,28 @@ static ssize_t store_ADC_Charger_Voltage(struct device *dev, struct device_attri
 }
 
 static DEVICE_ATTR(ADC_Charger_Voltage, 0664, show_ADC_Charger_Voltage, store_ADC_Charger_Voltage);
+
+
+//begin-20151105-jiangjingjing-add for MINISW Charger testitem show I_charging.Task 811552
+///////////////////////////////////////////////////////////////////////////////////////////
+//// Create File For Icharging Profile : I_Charging
+///////////////////////////////////////////////////////////////////////////////////////////
+static ssize_t show_I_Charging(struct device *dev,struct device_attribute *attr, char *buf)
+{
+    //begin-20160315-yuduan.xie-add-for-Charge-Task 1813965
+    signed int ICharging=0;
+    ICharging = battery_meter_get_charging_current();
+    //xlog_printk(ANDROID_LOG_INFO, "Power/Battery", "[EM] I_Charging : %d\n", BMT_status.ICharging);
+    return sprintf(buf, "%d\n", ICharging);
+    //end-20160315-yuduan.xie-add-for-Charge-Task 1813965
+}
+static ssize_t store_I_Charging(struct device *dev,struct device_attribute *attr, const char *buf, size_t size)
+{
+    return size;
+}
+static DEVICE_ATTR(I_Charging, 0664, show_I_Charging, store_I_Charging);
+//end-20151105-jie.fang-add for MINISW Charger testitem show I_charging.Task 811552
+
 
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
 /* // Create File For EM : ADC_Channel_0_Slope */
@@ -1686,8 +1743,19 @@ static kal_bool mt_battery_100Percent_tracking_check(void)
 			resetBatteryMeter = KAL_TRUE;
 		}
 
-		battery_log(BAT_LOG_CRTI, "[100percent], UI_SOC(%d), reset(%d)\n",
-			    BMT_status.UI_SOC, resetBatteryMeter);
+		if (BMT_status.UI_SOC == 100)
+			is_uisoc_ever_100 = KAL_TRUE;
+
+		if ((BMT_status.UI_SOC - BMT_status.SOC) > 10 && is_uisoc_ever_100 == KAL_TRUE) {
+			is_uisoc_ever_100 = KAL_FALSE;
+			BMT_status.bat_full = KAL_FALSE;
+		}
+
+		battery_log(BAT_LOG_CRTI, "[100percent], UI_SOC(%d), reset(%d) bat_full(%d) ever100(%d)\n",
+			    BMT_status.UI_SOC, resetBatteryMeter, BMT_status.bat_full, is_uisoc_ever_100);
+	} else if (is_uisoc_ever_100 == KAL_TRUE) {
+			battery_log(BAT_LOG_CRTI, "[100percent-ever100],UI_SOC=%d SOC=%d\n",
+			BMT_status.UI_SOC, BMT_status.UI_SOC);
 	} else {
 		/* charging is not full,  UI keep 99% if reaching 100%, */
 
@@ -1792,6 +1860,13 @@ static void mt_battery_Sync_UI_Percentage_to_Real(void)
 				BMT_status.UI_SOC--;
 				timer_counter = 0;
 			}
+		//add by xiaopu.zhu start 
+		else if ((abs(BMT_status.UI_SOC - BMT_status.SOC) > 10) )
+		{
+		BMT_status.UI_SOC--;
+		timer_counter = 0;
+		}
+		//add by xiaopu.zhu stop
 #ifdef FG_BAT_INT
 			else if (fg_wake_up_bat == KAL_TRUE)
 				BMT_status.UI_SOC--;
@@ -1872,7 +1947,7 @@ static void battery_update(struct battery_data *bat_data)
 	if (resetBatteryMeter == KAL_TRUE) {
 		battery_meter_reset();
 	} else {
-		if (bat_is_recharging_phase() == KAL_TRUE) {
+		if (BMT_status.bat_full == KAL_TRUE && is_uisoc_ever_100 == KAL_TRUE) {
 			BMT_status.UI_SOC = 100;
 			battery_log(BAT_LOG_CRTI, "[recharging] UI_SOC=%d, SOC=%d\n",
 				    BMT_status.UI_SOC, BMT_status.SOC);
@@ -2247,6 +2322,46 @@ static unsigned int mt_battery_average_method(BATTERY_AVG_ENUM type, unsigned in
 	return avgdata;
 }
 
+//jiangjingjing-modify-20151027-begin-Task 811552
+//jiangjingjing-add-for-GCF-20151125-begin-task 979293
+#ifndef TARGET_BUILD_GCF 
+ #if defined(CONFIG_BATT_ID_CHECK_SUPPORT)
+extern int IMM_GetOneChannelValue(int dwChannel, int data[4], int* rawdata);
+unsigned int battery_meter_get_battery_id_voltage(void)
+{
+   int i = 0, bat_id_vol = 0, data[4] = {0,0,0,0};
+   int res =0;
+   int rawdata=0;
+
+  for(i = 0; i < 3; i++)       
+  {    
+	   res = IMM_GetOneChannelValue(AUXADC_BATT_ID_CHANNEL,data,&rawdata);
+	   if(res < 0)
+	   {
+			printk("[adc_driver]: get data error\n");
+			break;
+	   }
+	   else
+	   {
+			printk("[adc_driver]: channel0[%d]raw =%d\n",i,rawdata);
+	   }
+	   msleep(5);	
+	   bat_id_vol += (rawdata * 1500 / 4096);
+	   printk("adc: channel4[%d]vol =%d\n",i,rawdata * 1500 / 4096);
+  }
+
+	if(res < 0)  /*get adc value fail*/
+	return bat_id_vol; 
+
+	bat_id_vol = bat_id_vol/3;
+  
+	return bat_id_vol;
+}
+#endif
+//jiangjingjing-modify-20151027-end-Task 811552
+#endif
+//jiangjingjing-add-for-GCF-20151125-end-task 979293
+
 void mt_battery_GetBatteryData(void)
 {
 	unsigned int bat_vol, charger_vol, Vsense, ZCV;
@@ -2257,6 +2372,16 @@ void mt_battery_GetBatteryData(void)
 	static signed int batteryTempBuffer[BATTERY_AVERAGE_SIZE];
 	static unsigned char batteryIndex;
 	static signed int previous_SOC = -1;
+
+       //jiangjingjing-modify-20151027-begin-Task 811552
+       //jiangjingjing-add-for-GCF-20151125-begin-task 979293
+      #ifndef TARGET_BUILD_GCF 
+      #if defined(CONFIG_BATT_ID_CHECK_SUPPORT)
+ 	int bat_id_vol; 
+      #endif
+      //jiangjingjing-modify-20151027-end-Task 811552
+      #endif
+     //jiangjingjing-add-for-GCF-20151125-end-task 979293
 
 	bat_vol = battery_meter_get_battery_voltage(KAL_TRUE);
 	Vsense = battery_meter_get_VSense();
@@ -2285,6 +2410,16 @@ void mt_battery_GetBatteryData(void)
 			SOC = previous_SOC;
 	}
 
+          //jiangjingjing-modify-20151027-begin-Task 811552
+        //jiangjingjing-add-for-GCF-20151125-begin-task 979293
+        #ifndef TARGET_BUILD_GCF 
+        #if defined(CONFIG_BATT_ID_CHECK_SUPPORT)
+        bat_id_vol = battery_meter_get_battery_id_voltage(); 
+        #endif
+         //jiangjingjing-modify-20151027-end-Task 811552
+        #endif
+	//jiangjingjing-add-for-GCF-20151125-end-task 979293
+		
 	ZCV = battery_meter_get_battery_zcv();
 
 	BMT_status.ICharging =
@@ -2320,6 +2455,15 @@ void mt_battery_GetBatteryData(void)
 	BMT_status.temperatureR = temperatureR;
 	BMT_status.SOC = SOC;
 	BMT_status.ZCV = ZCV;
+        //jiangjingjing-modify-20151027-begin-Task 811552
+        //jiangjingjing-add-for-GCF-20151125-begin-task 979293
+        #ifndef TARGET_BUILD_GCF 
+       #if defined(CONFIG_BATT_ID_CHECK_SUPPORT)
+	BMT_status.id_vol = bat_id_vol;
+      #endif
+       //jiangjingjing-modify-20151027-end-Task 811552
+       #endif
+	//jiangjingjing-add-for-GCF-20151125-end-task 979293
 
 #if !defined(CUST_CAPACITY_OCV2CV_TRANSFORM)
 	if (BMT_status.charger_exist == KAL_FALSE) {
@@ -2339,13 +2483,61 @@ void mt_battery_GetBatteryData(void)
 		g_battery_soc_ready = KAL_TRUE;
 
 	battery_log(BAT_LOG_CRTI,
-		    "AvgVbat=(%d),bat_vol=(%d),AvgI=(%d),I=(%d),VChr=(%d),AvgT=(%d),T=(%d),pre_SOC=(%d),SOC=(%d),ZCV=(%d)\n",
-		    BMT_status.bat_vol, bat_vol, BMT_status.ICharging, ICharging,
-		    BMT_status.charger_vol, BMT_status.temperature, temperature,
-		    previous_SOC, BMT_status.SOC, BMT_status.ZCV);
-
+	"AvgVbat=(%d,%d),AvgI=(%d,%d),VChr=%d,AvgT=(%d,%d),SOC=(%d,%d),UI_SOC=%d,ZCV=%d bcct:%d:%d I:%d\n",
+		BMT_status.bat_vol, bat_vol, BMT_status.ICharging, ICharging,
+		BMT_status.charger_vol, BMT_status.temperature, temperature,
+		previous_SOC, BMT_status.SOC, BMT_status.UI_SOC, BMT_status.ZCV,
+		g_bcct_flag, get_usb_current_unlimited(), get_bat_charging_current_level());
 
 }
+
+//jiangjingjing-modify-20151027-begin-Task 811552
+//jiangjingjing-add-for-GCF-20151125-begin-task 979293
+#ifndef TARGET_BUILD_GCF 
+#if defined(CONFIG_BATT_ID_CHECK_SUPPORT)
+#ifndef TARGET_BUILD_MMITEST  //add-by-jiangjingjing-for-mini-compile-error-20151111
+static PMU_STATUS mt_battery_CheckBatteryId(void)
+{	
+	PMU_STATUS status = PMU_STATUS_OK;
+	//VEKEN: R_ID = 10k,Vbat_id=10/(10+24)*1.8V=529mV, the valid gap is 429~629
+	//BYD:    R_ID=33k, Vbat_id=33/(33+24)*1.8V=1042mV, the valid gap is 942~1142
+	if(((BMT_status.id_vol < BYD_MIN_VALID_BATT_ID) || (BMT_status.id_vol > BYD_MAX_VALID_BATT_ID))
+             &&((BMT_status.id_vol < VEKEN_MIN_VALID_BATT_ID) || (BMT_status.id_vol > VEKEN_MAX_VALID_BATT_ID))
+           )
+	{
+        battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery ID error !!\n\r"); 
+        status = PMU_STATUS_FAIL;  
+	//#ifdef CONFIG_MTK_KERNEL_POWER_OFF_CHARGING
+	//	if(g_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT || g_boot_mode == LOW_POWER_OFF_CHARGING_BOOT)
+	//	{
+	//		battery_xlog_printk(BAT_LOG_CRTI, "[pmic_thread_kthread] battery id error In Kernel Power Off Charging Mode!  Shutdown OS!\r\n");
+			//battery_charging_control(CHARGING_CMD_SET_POWER_OFF,NULL);
+	//	}
+	//#endif
+	}
+	else if((BMT_status.id_vol < BYD_MAX_VALID_BATT_ID)&&(BMT_status.id_vol > BYD_MIN_VALID_BATT_ID))
+  	{
+		status = PMU_STATUS_OK;
+		battery_xlog_printk(BAT_LOG_CRTI,"battery id BYD, Vbat_id = %d!\n", BMT_status.id_vol);
+  	}
+	else if((BMT_status.id_vol < VEKEN_MAX_VALID_BATT_ID)&&(BMT_status.id_vol > VEKEN_MIN_VALID_BATT_ID))
+  	{
+		status = PMU_STATUS_OK;
+		battery_xlog_printk(BAT_LOG_CRTI,"battery id VEKEN, Vbat_id = %d!\n", BMT_status.id_vol);
+	}	
+
+	else
+  	{
+		status = PMU_STATUS_FAIL;
+		battery_xlog_printk(BAT_LOG_CRTI,"battery id error! Vbat_id = %d!\n", BMT_status.id_vol);
+	}	
+	return status;
+}
+#endif //add-by-jiangjingjing-for-mini-compile-error-20151111
+#endif
+//jiangjingjing-modify-20151027-end-Task 811552
+#endif
+//jiangjingjing-add-for-GCF-20151125-end-task 979293
 
 
 static PMU_STATUS mt_battery_CheckBatteryTemp(void)
@@ -2474,10 +2666,61 @@ static void mt_battery_CheckBatteryStatus(void)
 		battery_charging_control(CHARGING_CMD_SET_ERROR_STATE, &cmd_discharging);
 		cmd_discharging = -1;
 	}
+	//jiangjingjing-modify-20151027-begin-Task 811552
+	#if 0
 	if (mt_battery_CheckBatteryTemp() != PMU_STATUS_OK) {
 		BMT_status.bat_charging_state = CHR_ERROR;
 		return;
 	}
+	#endif
+     //jiangjingjing-add-for-GCF-20151125-begin-task 979293
+      #ifndef TARGET_BUILD_GCF 
+      #if defined(CONFIG_BATT_ID_CHECK_SUPPORT)
+ 	#ifdef TARGET_BUILD_MMITEST //jiangjingjing-add-for-mini-not-check-battery id-20151111-begin-811778
+	if(!( (get_boot_mode()==META_BOOT) || (get_boot_mode()==ADVMETA_BOOT) || (get_boot_mode()==ATE_FACTORY_BOOT) ))
+	{
+		/* disable id check for PR 595109 20140212
+		if(mt_battery_CheckBatteryId() != PMU_STATUS_OK)
+		{
+			BMT_status.bat_charging_state = CHR_ERROR;
+			return;                  
+		}
+	    */
+	}
+	#else
+	if(mt_battery_CheckBatteryId() != PMU_STATUS_OK)
+	{
+		BMT_status.bat_charging_state = CHR_ERROR;
+		return;                  
+	}
+
+	else if(BMT_status.bat_charging_state == CHR_ERROR)
+	{
+		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Battery ID change right\n\r");
+		BMT_status.bat_charging_state = CHR_PRE;			 
+	}
+    #endif//jiangjingjing-add-for-mini-not-check-battery id-20151111-end-811778
+    #endif
+    #endif
+    //jiangjingjing-add-for-GCF-20151125-end-task 979293
+
+	#ifdef TARGET_BUILD_MMITEST
+	if(!( (get_boot_mode()==META_BOOT) || (get_boot_mode()==ADVMETA_BOOT) || (get_boot_mode()==ATE_FACTORY_BOOT) ))
+ 	{
+		if(mt_battery_CheckBatteryTemp() != PMU_STATUS_OK)
+		{
+			BMT_status.bat_charging_state = CHR_ERROR;
+			return;                  
+		}
+	}
+      #else
+	if(mt_battery_CheckBatteryTemp() != PMU_STATUS_OK)
+	{
+		BMT_status.bat_charging_state = CHR_ERROR;
+		return;                  
+	}
+	#endif
+     //jiangjingjing-modify-20151027-end-Task 811552
 
 	if (mt_battery_CheckChargerVoltage() != PMU_STATUS_OK) {
 		BMT_status.bat_charging_state = CHR_ERROR;
@@ -2559,6 +2802,9 @@ static void mt_battery_notify_ICharging_check(void)
 
 static void mt_battery_notify_VBatTemp_check(void)
 {
+/*modify by jiangjingjing for jrd battery warning policy-20151102-Task 811552*/
+  if( BMT_status.charger_exist == KAL_TRUE )
+{
 #if defined(BATTERY_NOTIFY_CASE_0002_VBATTEMP)
 
 	if (BMT_status.temperature >= batt_cust_data.max_charge_temperature) {
@@ -2586,8 +2832,39 @@ static void mt_battery_notify_VBatTemp_check(void)
 		    g_BatteryNotifyCode);
 
 #endif
-}
+  	}
+  else
+  	{
+#if defined(BATTERY_NOTIFY_CASE_0002_VBATTEMP)
 
+		if (BMT_status.temperature >= MAX_WARNING_TEMPERATURE) {
+			g_BatteryNotifyCode |= 0x0040;
+			battery_log(BAT_LOG_CRTI, "[BATTERY] bat_temp(%d) out of range(too high)\n",
+					    BMT_status.temperature);
+		}
+#if defined(CONFIG_MTK_JEITA_STANDARD_SUPPORT)
+		else if (BMT_status.temperature < TEMP_NEG_10_THRESHOLD) {
+			g_BatteryNotifyCode |= 0x0080;
+			battery_log(BAT_LOG_CRTI, "[BATTERY] bat_temp(%d) out of range(too low)\n",
+					    BMT_status.temperature);
+		}
+#else
+#ifdef BAT_LOW_TEMP_PROTECT_ENABLE
+//20151224 liujunting modify for defect:1201740
+		else if (BMT_status.temperature <= MIN_WARNING_TEMPERATURE) {
+			g_BatteryNotifyCode |= 0x0080;
+			battery_log(BAT_LOG_CRTI, "[BATTERY] bat_temp(%d) out of range(too low)\n",
+					    BMT_status.temperature);
+		}
+#endif
+#endif
+		battery_log(BAT_LOG_FULL, "[BATTERY] BATTERY_NOTIFY_CASE_0002_VBATTEMP (%x)\n",
+			    g_BatteryNotifyCode);
+#endif
+		
+  	}
+  /*modify by jiangjingjing for jrd battery warning policy-20151102-Task 811552*/
+}
 
 static void mt_battery_notify_VCharger_check(void)
 {
@@ -2663,6 +2940,7 @@ void mt_battery_notify_check(void)
 	}
 }
 
+#ifndef TARGET_BUILD_MMITEST  //add-by-jiangjingjing-for-mini-compile-error-20151111
 static void mt_battery_thermal_check(void)
 {
 	if ((g_battery_thermal_throttling_flag == 1) || (g_battery_thermal_throttling_flag == 3)) {
@@ -2675,7 +2953,11 @@ static void mt_battery_thermal_check(void)
 #if defined(CONFIG_MTK_JEITA_STANDARD_SUPPORT)
 		/* ignore default rule */
 #else
-		if (BMT_status.temperature >= 60) {
+  	//BEGIN: jiangjingjing modify  for importing the latest battery policy-20151102-Task 811552. 
+	if(BMT_status.temperature >= 60 || BMT_status.temperature <= -20) 
+	//old:if(BMT_status.temperature >= 60)
+	//END: xiaopu.zhu modify  for importing the latest battery policy. 
+	{
 #if defined(CONFIG_POWER_EXT)
 			battery_log(BAT_LOG_CRTI,
 				    "[BATTERY] CONFIG_POWER_EXT, no update battery update power down.\n");
@@ -2698,15 +2980,24 @@ static void mt_battery_thermal_check(void)
 					bat_data->BAT_CAPACITY = 0;
 
 					power_supply_changed(bat_psy);
-
+		    //BEGIN: add by jiangjingjing,MS has no display when charging highest and lowest temperature.20151102-Task 811552
+		    if(g_platform_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT || g_platform_boot_mode == LOW_POWER_OFF_CHARGING_BOOT)
+		    {
+		       return;
+		    }
+		    //END: add by jiangjingjing,MS has no display when charging highest and lowest temperature.20151102-Task 811552
 					if (BMT_status.charger_exist == KAL_TRUE) {
 						/* can not power down due to charger exist, so need reset system */
+			#ifndef TARGET_BUILD_MMITEST         
 						battery_charging_control
 						    (CHARGING_CMD_SET_PLATFORM_RESET, NULL);
+			#endif
 					}
+			#ifndef TARGET_BUILD_MMITEST         
 					/* avoid SW no feedback */
 					battery_charging_control(CHARGING_CMD_SET_POWER_OFF, NULL);
 					/* mt_power_off(); */
+			#endif
 				}
 			}
 #endif
@@ -2716,10 +3007,11 @@ static void mt_battery_thermal_check(void)
 	}
 
 }
-
+#endif  //add-by-jiangjingjing-for-mini-compile-error-20151111
 
 static void mt_battery_update_status(void)
 {
+	struct power_supply *bat_psy1 = &battery_main.psy;//20160128 liujunting add for task:1535771
 #if defined(CONFIG_POWER_EXT)
 	battery_log(BAT_LOG_CRTI, "[BATTERY] CONFIG_POWER_EXT, no update Android.\n");
 #else
@@ -2732,6 +3024,14 @@ static void mt_battery_update_status(void)
 			battery_update(&battery_main);
 		} else {
 			battery_log(BAT_LOG_CRTI, "skip mt_battery_update_status.\n");
+			//begin-2016-01-28-add by liujunting for task:1535771
+			usb_update(&usb_main);
+			ac_update(&ac_main);
+			wireless_update(&wireless_main);
+			if (BMT_status.charger_exist == 0)
+				battery_main.BAT_STATUS = POWER_SUPPLY_STATUS_NOT_CHARGING;
+			power_supply_changed(bat_psy1);
+			//end-2016-01-28-add by liujunting for task:1535771
 			skip_battery_update = KAL_FALSE;
 		}
 	}
@@ -3039,6 +3339,19 @@ void BAT_thread(void)
 		battery_meter_initial();	/* move from battery_probe() to decrease booting time */
 		BMT_status.nPercent_ZCV = battery_meter_get_battery_nPercent_zcv();
 		battery_meter_initilized = KAL_TRUE;
+#if defined(CONFIG_POWER_EXT)
+#else
+		BMT_status.SOC = battery_meter_get_battery_percentage();
+		BMT_status.UI_SOC = BMT_status.SOC;
+		BMT_status.ZCV = battery_meter_get_battery_zcv();
+
+		BMT_status.temperatureV = battery_meter_get_tempV();
+		BMT_status.temperatureR = battery_meter_get_tempR(BMT_status.temperatureV);
+		BMT_status.bat_vol = battery_meter_get_battery_voltage(KAL_TRUE);
+		BMT_status.temperature = battery_meter_get_battery_temperature();
+		battery_update(&battery_main);
+#endif
+
 	}
 
 	mt_battery_charger_detect_check();
@@ -3046,7 +3359,11 @@ void BAT_thread(void)
 	if (BMT_status.charger_exist == KAL_TRUE)
 		check_battery_exist();
 
+	 //BEGIN: add by jiangjingjing for  block shutdown beause of over temperature in MINI sw for task-137712
+	#ifndef TARGET_BUILD_MMITEST
 	mt_battery_thermal_check();
+	#endif
+	 //END: add by jiangjingjing for  block shutdown beause of over temperature in MINI sw for task-137712
 	mt_battery_notify_check();
 
 	if (BMT_status.charger_exist == KAL_TRUE) {
@@ -3140,7 +3457,7 @@ void bat_thread_wakeup(void)
 #ifdef MTK_ENABLE_AGING_ALGORITHM
 	suspend_time = 0;
 #endif
-	_g_bat_sleep_total_time = 0;
+	battery_meter_reset_sleep_time();
 	wake_up(&bat_thread_wq);
 }
 
@@ -4211,6 +4528,18 @@ static int battery_probe(struct platform_device *dev)
 		int ret_device_file = 0;
 
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_ADC_Charger_Voltage);
+		//jiangjingjing-modify-20151027-begin-20151102-Task 811552
+        //begin-20150518-jiangjingjing-add for MINISW Charger testitem show I_charging.
+		 ret_device_file = device_create_file(&(dev->dev), &dev_attr_I_Charging);
+		//end-20150518-jiangjingjing-add for MINISW Charger testitem show I_charging.
+		//jiangjingjing-add-for-GCF-20151125-begin-task 979293
+              #ifndef TARGET_BUILD_GCF 
+	       #if defined (CONFIG_BATT_ID_CHECK_SUPPORT)
+		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Battery_Id);
+	       #endif
+		//jiangjingjing-modify-20151027-end-20151102-Task 811552
+		#endif
+	       //jiangjingjing-add-for-GCF-20151125-end-task 979293
 
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_ADC_Channel_0_Slope);
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_ADC_Channel_1_Slope);

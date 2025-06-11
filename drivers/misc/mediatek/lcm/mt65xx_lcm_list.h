@@ -92,6 +92,7 @@ extern LCM_DRIVER hx8369a_wvga_dsi_cmd_drv;
 extern LCM_DRIVER hx8369a_wvga_dsi_vdo_drv;
 extern LCM_DRIVER hx8392a_dsi_cmd_lcm_drv;
 extern LCM_DRIVER hx8392a_dsi_cmd_3lane_lcm_drv;
+extern LCM_DRIVER hx8392a_dsi_cmd_3lane_qhd_lcm_drv;
 extern LCM_DRIVER hx8392a_dsi_cmd_wvga_lcm_drv;
 extern LCM_DRIVER hx8392a_dsi_cmd_fwvga_lcm_drv;
 extern LCM_DRIVER hx8392a_dsi_cmd_qhd_lcm_drv;
@@ -234,6 +235,29 @@ extern LCM_DRIVER nt35595_fhd_dsi_cmd_truly_nt50358_extern_lcm_drv;
 extern LCM_DRIVER r69429_wqxga_dsi_vdo_lcm_drv;
 extern LCM_DRIVER hx8394c_wxga_dsi_vdo_lcm_drv;
 extern LCM_DRIVER nt35595_truly_fhd_dsi_vdo_lcm_drv;
+extern LCM_DRIVER b080uan01_2_wuxga_dsi_vdo_lcm_drv;
+//begin-20150612-fangjie-add-lcm driver for pixi4-4 WVGA 800*480
+extern LCM_DRIVER ili9806e_wvga_dsi_vdo_Holitech_lcm_drv_pixi44;
+extern LCM_DRIVER fl10802_wvga_dsi_vdo_TXD_lcm_drv_pixi44;
+extern LCM_DRIVER hx8379c_wvga_dsi_vdo_TDT_lcm_drv_pixi44;
+//end-20150612-fangjie-add-lcm driver for pixi4-4 WVGA 800*480
+
+//Start:Reqxxx,liuyang3.wt,ADD,20151116,add lcm driver;
+extern LCM_DRIVER hx8379c_fwvga_dsi_vdo_holitech_pixi4_5_lcm_drv;
+extern LCM_DRIVER fl10802_fwvga_dsi_vdo_bitland_pixi4_5_lcm_drv;
+//End:Reqxxx,liuyang3.wt,ADD,20151116,add lcm driver;
+// add new second lcd for pixi4_5 by duanjinhui.wt at 20160621
+extern LCM_DRIVER fl10802_fwvga_dsi_vdo_djnlcd_pixi4_5_lcm_drv;
+// end by duanjinhui.wt
+// add txd lcd for pixi4_5 by duanjinhui.wt at 20160630
+extern LCM_DRIVER jd9161ba_fwvga_dsi_vdo_txdlcd_pixi4_5_lcm_drv;
+// end by duanjinhui.wt
+// add new cpt lcd for pixi4_5 by duanjinhui.wt at 20160630
+extern LCM_DRIVER jd9161_fwvga_dsi_vdo_cptlcd_pixi4_5_lcm_drv;
+// end by duanjinhui.wt
+// add HLT lcd for pixi4_5 by xin_liu at 20160926
+extern LCM_DRIVER jd9161_fwvga_dsi_vdo_holitech_pixi4_5_lcm_drv;
+// end by xin_liu
 #endif
 
 #ifdef BUILD_LK

@@ -15,7 +15,13 @@
 #define CHARGER_THRESH_HOLD                 (4300)
 #define BATTERY_UVLO_VOLTAGE                (2700)
 #ifndef SHUTDOWN_SYSTEM_VOLTAGE
+//jiangjingjing-add-for-GCF-20151125-begin-task 979293 
+#ifdef TARGET_BUILD_GCF 
+#define SHUTDOWN_SYSTEM_VOLTAGE		(3200)
+#else
 #define SHUTDOWN_SYSTEM_VOLTAGE		(3400)
+#endif
+//jiangjingjing-add-for-GCF-20151125-end-task 979293
 #endif
 
 /*****************************************************************************
@@ -202,6 +208,15 @@ typedef struct {
 	unsigned int nPercent_ZCV;
 	unsigned int nPrecent_UI_SOC_check_point;
 	unsigned int ZCV;
+	//jiangjingjing-modify-20151027-begin-defect811778
+	//jiangjingjing-add-for-GCF-20151125-begin
+       #ifndef TARGET_BUILD_GCF 
+       #if defined(CONFIG_BATT_ID_CHECK_SUPPORT)
+	unsigned int         id_vol;
+       #endif
+	//jiangjingjing-modify-20151027-end-defect811778
+	#endif
+	//jiangjingjing-add-for-GCF-20151125-end
 } PMU_ChargerStruct;
 
 struct battery_custom_data {

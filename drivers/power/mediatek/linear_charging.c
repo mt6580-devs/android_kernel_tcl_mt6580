@@ -132,6 +132,13 @@ kal_bool ta_cable_out_occur = KAL_FALSE;
 kal_bool is_ta_connect = KAL_FALSE;
 #endif
 
+//begin add by jiangjingjing 20151103 for jrd policy-Task 811552
+#define BATTERY_TEMPERATURE_50 50
+#define BATTERY_TEMPERATURE_45 45
+#define BATTERY_TEMPERATURE_40 40
+#define BATTERY_TEMPERATURE_38 38
+//end add by jiangjingjing 20151103 for jrd policy-Task 811552
+
  /* ============================================================ // */
 static void __init_charging_varaibles(void)
 {
@@ -831,12 +838,23 @@ unsigned int set_bat_charging_current_limit(int current_limit)
 			g_temp_CC_value = CHARGE_CURRENT_1600_00_MA;
 		else
 			g_temp_CC_value = CHARGE_CURRENT_450_00_MA;
+
+		if (BMT_status.charger_type == STANDARD_HOST)
+			if ((current_limit * 100) >= CHARGE_CURRENT_500_00_MA) {
+				g_temp_CC_value = USB_CHARGER_CURRENT;
+				battery_log(BAT_LOG_CRTI,
+		"[BATTERY] set_bat_charging_current_limit over usb spec(%d,%d)\r\n",
+				current_limit * 100, g_temp_CC_value);
+			}
+
+
+
 	} else {
 		/* change to default current setting */
 		g_bcct_flag = 0;
 	}
 
-	wake_up_bat();
+	wake_up_bat3();
 
 	return g_bcct_flag;
 }
@@ -940,6 +958,18 @@ void select_charging_curret(void)
 		battery_log(BAT_LOG_CRTI, "[BATTERY] Default CC mode charging : %d\r\n",
 			    g_temp_CC_value);
 
+//begin add by jiangjingjing 20151103 for JRD battery policy-Task 811552
+ //         if(BMT_status.charger_type == STANDARD_CHARGER)
+          	{
+                 if((BMT_status.temperature>BATTERY_TEMPERATURE_38)&&(BMT_status.temperature<MAX_CHARGE_TEMPERATURE))
+                 	{
+                        if(BMT_status.temperature>BATTERY_TEMPERATURE_40)
+                           g_temp_CC_value=CHARGE_CURRENT_450_00_MA;
+                 	}
+
+          	}        
+//end add by jiangjingjing 20151103 for JRD battery policy-Task 811552
+
 #if defined(CONFIG_MTK_JEITA_STANDARD_SUPPORT)
 		set_jeita_charging_current();
 #endif
@@ -982,7 +1012,7 @@ static unsigned int charging_full_check(void)
 
 	if (BMT_status.ICharging <= charging_full_current) {
 		full_check_count++;
-		if (6 == full_check_count) {
+		if (3 == full_check_count) {
 			status = KAL_TRUE;
 			full_check_count = 0;
 			battery_log(BAT_LOG_CRTI,
@@ -1093,6 +1123,22 @@ static void pchr_turn_on_charging(void)
 			}
 		}
 
+		/* Set Charging Current 
+		if (g_bcct_flag == 1) {
+			battery_log(BAT_LOG_FULL,
+					"[BATTERY] select_charging_curret_bcct !\n");
+			select_charging_curret_bcct();
+		} else {
+			if (get_usb_current_unlimited()) {
+				g_temp_CC_value = batt_cust_data.ac_charger_current;
+				battery_log(BAT_LOG_FULL,
+						"USB_CURRENT_UNLIMITED, use AC_CHARGER_CURRENT\n");
+			} else {
+				battery_log(BAT_LOG_FULL, "[BATTERY] select_charging_current !\n");
+				select_charging_curret();
+			}
+		}*/
+
 		if (g_temp_CC_value == CHARGE_CURRENT_0_00_MA) {
 			charging_enable = KAL_FALSE;
 			battery_log(BAT_LOG_CRTI,
@@ -1113,7 +1159,19 @@ if (ta_check_ta_control == KAL_FALSE)
 			/* Set CV */
 #if !defined(CONFIG_MTK_JEITA_STANDARD_SUPPORT)
 			if (batt_cust_data.high_battery_voltage_support)
-				cv_voltage = BATTERY_VOLT_04_350000_V;
+			//	cv_voltage = BATTERY_VOLT_04_337500_V; //modify-by-jiangjingjing-Task 811552-begin
+			 {	
+			    if((BMT_status.temperature >= TEMP_POS_45_THRESHOLD)&&(BMT_status.temperature <= MAX_CHARGE_TEMPERATURE))
+	                    {
+		                 cv_voltage = BATTERY_VOLT_04_100000_V;		//tune cv to 4.10v when temperature >= 45		
+	                    }
+	                   else
+	                   {
+	                      cv_voltage = BATTERY_VOLT_04_350000_V;         //modify by jiayu.ding for wingtech req
+				  battery_log(BAT_LOG_CRTI,
+				    "[BATTERY] pchr_turn_on_charging,set CV to 4.35V \r\n");
+	                    }
+			}//high_battery_vlotage_support //modify-by-jiangjingjing-Task 811552-end
 			else
 				cv_voltage = BATTERY_VOLT_04_200000_V;
 
@@ -1198,7 +1256,7 @@ PMU_STATUS BAT_ConstantCurrentModeAction(void)
 
 		/* Charging 9s and discharging 1s : start */
 		battery_charging_control(CHARGING_CMD_ENABLE, &charging_enable);
-		msleep(1000);
+		msleep(1000);  //modify by jiayu.ding
 	}
 #endif
 
@@ -1216,7 +1274,7 @@ PMU_STATUS BAT_TopOffModeAction(void)
 	unsigned int cv_voltage;
 
 	if (batt_cust_data.high_battery_voltage_support)
-		cv_voltage = 4350;
+		cv_voltage = 4350;   //modify by jiayu.ding for wingtech req
 	else
 		cv_voltage = 4200;
 

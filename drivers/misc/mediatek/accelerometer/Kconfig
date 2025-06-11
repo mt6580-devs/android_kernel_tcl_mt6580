@@ -17,7 +17,10 @@ config CUSTOM_KERNEL_ACCELEROMETER
           driver configuration should be configured as well.
 
 source "drivers/misc/mediatek/accelerometer/mc3410-new/Kconfig"
+source "drivers/misc/mediatek/accelerometer/mc3xxx_auto/Kconfig"
 source "drivers/misc/mediatek/accelerometer/icm20645g/Kconfig"
 source "drivers/misc/mediatek/accelerometer/mpu6050g-new/Kconfig"
 source "drivers/misc/mediatek/accelerometer/mpu6515/Kconfig"
-source "drivers/misc/mediatek/accelerometer/bma222E-new/Kconfig"
+source "drivers/misc/mediatek/accelerometer/bma222E_pixi4_5/Kconfig"
+source "drivers/misc/mediatek/accelerometer/KXTJ2_1009_pixi4_5/Kconfig"
+source "drivers/misc/mediatek/accelerometer/bma253_pixi4_5/Kconfig"

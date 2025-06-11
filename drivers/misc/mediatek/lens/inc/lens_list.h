@@ -26,6 +26,22 @@ extern long DW9714AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, uns
 extern int DW9714AF_Release(struct inode *a_pstInode, struct file *a_pstFile);
 #endif
 
+// add second camera code for pixi4_5 by duanjinhui.wt at 20160322
+#ifdef CONFIG_MTK_LENS_BU64240AF_SUPPORT
+extern void BU64240AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened);
+extern long BU64240AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param);
+extern int BU64240AF_Release(struct inode *a_pstInode, struct file *a_pstFile);
+#endif
+// end by duanjinhui.wt
+
+// add new second camera code for pixi4_5 by duanjinhui.wt at 20160616
+#ifdef CONFIG_MTK_LENS_GT9760SAF_SUPPORT
+extern void GT9760SAF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened);
+extern long GT9760SAF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param);
+extern int GT9760SAF_Release(struct inode *a_pstInode, struct file *a_pstFile);
+#endif
+// end by duanjinhui.wt
+
 #ifdef CONFIG_MTK_LENS_DW9814AF_SUPPORT
 extern void DW9814AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened);
 extern long DW9814AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param);

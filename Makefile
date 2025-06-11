@@ -776,6 +776,19 @@ ifeq ($(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-goto.sh $(CC)), y)
 	KBUILD_CFLAGS += -DCC_HAVE_ASM_GOTO
 endif
 
+#BEGIN: modify block key_power to mmitest by jiangjingjing task-811778 begin
+ifeq ($(strip $(TARGET_BUILD_MMITEST)),true)
+       KBUILD_CFLAGS += -DTARGET_BUILD_MMITEST
+endif
+#END: modify block key_power to mmitest by jiangjingjing task-811778 end
+
+#BEGIN: modify for GCF verify to mmitest by jiangjingjing task 979293 begin
+ifeq ($(strip $(TARGET_BUILD_GCF)),true)
+       KBUILD_CFLAGS += -DTARGET_BUILD_GCF
+endif
+#END: modify for GCF verifyto mmitest by jiangjingjing task 979293  end
+
+
 include $(srctree)/scripts/Makefile.extrawarn
 
 # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments

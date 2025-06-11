@@ -2,6 +2,9 @@
 
 struct gyro_context *gyro_context_obj = NULL;
 static struct platform_device *pltfm_dev;
+ #if defined (CONFIG_HW_INFO) 
+extern char *g_Gyro_name; //add by xiaopu.zhu 
+#endif
 
 static struct gyro_init_info *gyroscope_init_list[MAX_CHOOSE_GYRO_NUM] = {0};
 
@@ -495,6 +498,9 @@ static int gyro_real_driver_init(struct platform_device *pdev)
 			err = gyroscope_init_list[i]->init(pdev);
 			if (0 == err) {
 				GYRO_LOG("gyro real driver %s probe ok\n", gyroscope_init_list[i]->name);
+                  #if defined (CONFIG_HW_INFO) //add by xiaopu.zhu
+		   g_Gyro_name = gyroscope_init_list[i]->name;
+		   #endif
 				break;
 			}
 		}

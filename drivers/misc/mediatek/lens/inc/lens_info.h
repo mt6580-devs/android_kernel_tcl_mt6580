@@ -19,6 +19,12 @@
 #define AFDRV_BU64745GWZAF "BU64745GWZAF"
 #define AFDRV_DW9714A "DW9714A"
 #define AFDRV_DW9714AF "DW9714AF"
+// add second camera code for pixi4_5 by duanjinhui.wt at 20160322
+#define AFDRV_BU64240AF "BU64240AF"
+// end by duanjinhui.wt
+// add new second camera code for pixi4_5 by duanjinhui.wt at 20160616
+#define AFDRV_GT9760SAF "GT9760SAF"
+// end by duanjinhui.wt
 #define AFDRV_DW9718AF "DW9718AF"
 #define AFDRV_DW9814AF "DW9814AF"
 #define AFDRV_FM50AF "FM50AF"

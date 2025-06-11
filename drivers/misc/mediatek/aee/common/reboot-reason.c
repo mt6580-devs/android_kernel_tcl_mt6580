@@ -39,8 +39,10 @@ enum boot_reason_t {
 	BR_KE_REBOOT
 };
 
-char boot_reason[][16] = { "XXXXXX", "XXXXXXX", "XXX", "XXX",
-	"XXXXXX", "XXXXXXXXXXX", "XXXX", "XXXXXX", "XXXXXX" };
+/*[1175903] record bootup reason by lixiang.he at 20160119 bigen */
+char boot_reason[][25] = { "BR_POWER_KEY", "BR_USB", "BR_RTC", "BR_WDT",
+	"BR_WDT_BY_PASS_PWK", "BR_TOOL_BY_PASS_PWK", "BR_2SEC_REBOOT", "BR_UNKNOWN", "BR_KE_REBOOT" };
+/*[1175903] record bootup reason by lixiang.he at 20160119 end */
 
 int __weak aee_rr_reboot_reason_show(struct seq_file *m, void *v)
 {

@@ -8,6 +8,11 @@ static struct alsps_init_info *alsps_init_list[MAX_CHOOSE_ALSPS_NUM] = {0};
 
 static bool alsps_misc_dev_init;
 
+
+#if defined (CONFIG_HW_INFO) 
+extern char *g_alsps_name;//add by xiaopu.zhu
+#endif
+
 int als_data_report(struct input_dev *dev, int value, int status)
 {
 	struct alsps_context *cxt = NULL;
@@ -678,6 +683,9 @@ static int alsps_real_driver_init(void)
 			err = alsps_init_list[i]->init();
 			if (0 == err) {
 				ALSPS_LOG(" alsps real driver %s probe ok\n", alsps_init_list[i]->name);
+		    #if defined (CONFIG_HW_INFO) 
+		     g_alsps_name = alsps_init_list[i]->name;//add by xiaopu.zhu for hardwareinfo
+		    #endif
 				break;
 			}
 		}

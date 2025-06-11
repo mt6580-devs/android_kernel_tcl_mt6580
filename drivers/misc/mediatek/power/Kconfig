@@ -43,3 +43,10 @@ config MTK_DYNAMIC_BAT_CV_SUPPORT
 	to AP and no need to use AuxADC
 	to get battery voltage.
 
+#jiangjingjing-add-for-battery-id-check-201510127-begin-defect-811778 
+config BATT_ID_CHECK_SUPPORT
+	tristate "JRD battery ID check support"
+	default n
+	---help---
+          JRD battery ID check support
+#jiangjingjing-add-for-battery-id-check-201510127-end-defect-811778 

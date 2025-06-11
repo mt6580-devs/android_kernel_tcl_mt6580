@@ -64,6 +64,16 @@ static stAF_DrvList g_stAF_DrvList[MAX_NUM_OF_LENS] = {
 	#ifdef CONFIG_MTK_LENS_DW9714AF_SUPPORT
 	{1, AFDRV_DW9714AF, DW9714AF_SetI2Cclient, DW9714AF_Ioctl, DW9714AF_Release},
 	#endif
+	// add second camera code for pixi4_5 by duanjinhui.wt at 20160322
+	#ifdef CONFIG_MTK_LENS_BU64240AF_SUPPORT
+	{1, AFDRV_BU64240AF, BU64240AF_SetI2Cclient, BU64240AF_Ioctl, BU64240AF_Release},
+	#endif
+	// end by duanjinhui.wt
+	// add new second camera code for pixi4_5 by duanjinhui.wt at 20160616
+	#ifdef CONFIG_MTK_LENS_GT9760SAF_SUPPORT
+	{1, AFDRV_GT9760SAF, GT9760SAF_SetI2Cclient, GT9760SAF_Ioctl, GT9760SAF_Release},
+	#endif
+	// end by duanjinhui.wt
 	#ifdef CONFIG_MTK_LENS_DW9814AF_SUPPORT
 	{1, AFDRV_DW9814AF, DW9814AF_SetI2Cclient, DW9814AF_Ioctl, DW9814AF_Release},
 	#endif
@@ -104,6 +114,7 @@ static long AF_SetMotorName(__user stAF_MotorName * pstMotorName)
 	long i4RetValue = -1;
 	int i;
 	stAF_MotorName stMotorName;
+	printk("Set Motor Name : %s\n", stMotorName.uMotorName);
 
 	if (copy_from_user(&stMotorName , pstMotorName, sizeof(stAF_MotorName)))
 		LOG_INF("copy to user failed when getting motor information\n");
@@ -153,6 +164,7 @@ static long AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned 
 static int AF_Open(struct inode *a_pstInode, struct file *a_pstFile)
 {
 	LOG_INF("Start\n");
+	printk(" Motor AF_Open \n");
 
 	if (g_s4AF_Opened) {
 		LOG_INF("The device is opened\n");
@@ -205,7 +217,7 @@ static inline int Register_AF_CharDrv(void)
 {
 	struct device *vcm_device = NULL;
 
-	LOG_INF("Start\n");
+	printk("Start,%s,%d,allenyao\n",__func__,__LINE__);
 
 	/* Allocate char driver no. */
 	if (alloc_chrdev_region(&g_AF_devno, 0, 1, AF_DRVNAME)) {
@@ -257,7 +269,7 @@ static inline int Register_AF_CharDrv(void)
 static inline void Unregister_AF_CharDrv(void)
 {
 	LOG_INF("Start\n");
-
+	printk("Start,%s,%d,allenyao\n",__func__,__LINE__);
 	/* Release char driver */
 	cdev_del(g_pAF_CharDrv);
 
@@ -307,7 +319,7 @@ static int AF_i2c_probe(struct i2c_client *client, const struct i2c_device_id *i
 	int i4RetValue = 0;
 
 	LOG_INF("Start\n");
-
+	printk("Start,%s,%d,allenyao\n",__func__,__LINE__);
 	/* Kirby: add new-style driver { */
 	g_pstAF_I2Cclient = client;
 
@@ -317,7 +329,7 @@ static int AF_i2c_probe(struct i2c_client *client, const struct i2c_device_id *i
 	if (i4RetValue) {
 
 		LOG_INF(" register char device failed!\n");
-
+		printk("Start,%s,%d,allenyao\n",__func__,__LINE__);
 		return i4RetValue;
 	}
 
@@ -369,10 +381,13 @@ static struct platform_device g_stAF_device = {
 
 static int __init MAINAF_i2C_init(void)
 {
+	printk("Start,%s,%d,allenyao\n",__func__,__LINE__);
+	printk( KERN_ERR "Start,%s,%d,allenyao\n",__func__,__LINE__);
 	#if I2C_CONFIG_SETTING == 1
+	printk("Start,%s,%d,allenyao\n",__func__,__LINE__);
 	i2c_register_board_info(LENS_I2C_BUSNUM, &kd_lens_dev, 1);
 	#endif
-
+	printk("Start,%s,%d,allenyao\n",__func__,__LINE__);
 	if (platform_device_register(&g_stAF_device)) {
 		LOG_INF("failed to register AF driver\n");
 		return -ENODEV;
@@ -382,7 +397,7 @@ static int __init MAINAF_i2C_init(void)
 		LOG_INF("Failed to register AF driver\n");
 		return -ENODEV;
 	}
-
+	printk("Start,%s,%d,allenyao\n",__func__,__LINE__);
 	return 0;
 }
 

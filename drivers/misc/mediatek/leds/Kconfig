@@ -15,3 +15,6 @@ config LIGHTNESS_MAPPING_VALUE
 
 config TB8173_EVB
 	bool "Support TB8173 EVB board"
+
+config SGM3146
+	bool "Support SGM3146 backlight IC"

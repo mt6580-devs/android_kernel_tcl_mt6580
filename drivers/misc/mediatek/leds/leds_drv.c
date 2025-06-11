@@ -85,6 +85,9 @@ static int debug_enable_led = 1;
 
 static int mt65xx_led_set_cust(struct cust_mt65xx_led *cust, int level);
 
+/*Begin jiangjingjing for backlight control 20151223*/
+//extern int disp_cust_set_backlight(int level_256);
+/*End   jiangjingjing for backlight control 20151223*/
 /****************************************************************************
  * add API for temperature control
  ***************************************************************************/
@@ -794,6 +797,11 @@ static void mt65xx_leds_shutdown(struct platform_device *pdev)
 			LEDS_DRV_DEBUG("backlight control through BLS!!1\n");
 			((cust_set_brightness) (g_leds_data[i]->cust.data)) (0);
 			break;
+		/*Begin jiangjingjing for backlight control 20151223-defect*/
+/*		case MT65XX_LED_MODE_CUST_BLIC:
+			disp_cust_set_backlight(0);
+			break;		*/
+		/*end jiangjingjing for backlight control 20151223-defect*/
 		case MT65XX_LED_MODE_NONE:
 		default:
 			break;

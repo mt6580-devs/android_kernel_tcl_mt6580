@@ -3,6 +3,7 @@
 
 #include <linux/ioctl.h>
 
+
 /*************************************************
 *
 **************************************************/
@@ -47,6 +48,9 @@ enum {
 #define KD_TORCH_FLASHLIGHT_ID      3
 #define KD_CONSTANT_FLASHLIGHT_ID   4
 
+#define KD_FLASHLIGHT_ENABLE      1
+#define KD_FLASHLIGHT_TORCH_      0
+#define KD_FRONT_FLASHLIGHT_ENABLE     2
 
 typedef enum {
 	e_CAMERA_NONE_SENSOR = 0,
@@ -165,7 +169,10 @@ typedef enum {
 #define FLASH_IOC_IS_OTG_USE _IOR(FLASHLIGHT_MAGIC, 200, int)
 #define FLASH_IOC_GET_FLASH_DRIVER_NAME_ID _IOR(FLASHLIGHT_MAGIC, 205, int)
 
-
+/*Begin ersen.shang add IO Command 20151029*/
+#define FLASHLIGHTIOC_ENABLE_STATUS _IOWR(FLASHLIGHT_MAGIC,210,unsigned long)
+#define FLASHLIGHT_TORCH_SELECT _IOWR(FLASHLIGHT_MAGIC,215,unsigned long)
+/*End   ersen.shang add IO Command 20151029*/
 
 typedef struct {
 	int sensorDev;
@@ -211,5 +218,6 @@ bool mtk_is_host_mode(void);
 /* Boost4Flash */
 int mt6332_OpenBoost4Flash(void);
 int mt6332_CloseBoost4Flash(void);
-
+void strobe_gpio_output(int pin, int level);
+int strobe_get_gpio_info(struct platform_device *pdev);
 #endif

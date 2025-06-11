@@ -4,8 +4,8 @@
 #include <linux/mutex.h>
 #include <linux/list.h>
 #include "disp_session.h"
-#include "disp_drv_platform.h"
-#include "display_recorder.h"
+#include "../mt6580/videox/disp_drv_platform.h"
+#include "../mt6580/dispsys/display_recorder.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +46,7 @@ struct mtkfb_fence_buf_info {
 	unsigned int size;
 	unsigned int mva_offset;
 	BUFFER_STATE buf_state;
+	unsigned int cache_sync;
 	unsigned int set_input_ticket;
 	unsigned int trigger_ticket;	/* we can't update trigger_ticket_end,
 					   because can't gurantee ticket being updated before cmdq callback

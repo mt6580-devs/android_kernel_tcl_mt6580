@@ -8,7 +8,7 @@ obj-$(CONFIG_MTK_BMA050)   +=  bma050/
 obj-$(CONFIG_MTK_BMA2XX)   +=  bma2xx/
 obj-$(CONFIG_MTK_BMA050_NEW)   +=  bma050-new/
 obj-$(CONFIG_MTK_BMA222E)   +=  bma222E/
-obj-$(CONFIG_MTK_BMA222E_NEW)   +=  bma222E-new/
+
 obj-$(CONFIG_MTK_MPU6050G)   +=  mpu6050g/
 obj-$(CONFIG_MTK_MPU6050G_NEW)   +=  mpu6050g-new/
 obj-$(CONFIG_MTK_BMA250)   +=  bma250/
@@ -25,3 +25,6 @@ obj-$(CONFIG_MTK_BMA255_SDO1)   +=  bma255-sdo1/
 obj-$(CONFIG_MTK_BMA056)   +=  bma056/
 obj-$(CONFIG_MTK_LSM6DS3)   +=  lsm6ds3/
 obj-$(CONFIG_MTK_ICM20645G)   +=  icm20645g/
+obj-$(CONFIG_MTK_BMA222E_PIXI4_5)   +=  bma222E_pixi4_5/
+obj-$(CONFIG_MTK_KXTJ2_1009_PIXI4_5)   +=  KXTJ2_1009_pixi4_5/
+obj-$(CONFIG_MTK_BMA253_PIXI4_5)   +=  bma253_pixi4_5/
