@@ -464,14 +464,6 @@ static const struct file_operations freqhopping_debug_fops = {
 	.release = single_release,
 };
 
-static const struct file_operations dramc_fops = {
-	.owner = THIS_MODULE,
-	.open = freqhopping_dramc_proc_open,
-	.read = seq_read,
-	.write = freqhopping_dramc_proc_write,
-	.release = single_release,
-};
-
 static const struct file_operations dvfs_fops = {
 	.owner = THIS_MODULE,
 	.open = freqhopping_dvfs_proc_open,
