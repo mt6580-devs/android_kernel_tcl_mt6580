@@ -19,10 +19,6 @@
 #include <linux/idr.h>
 #include <linux/irqchip/mt-eic.h>
 
-static const signed int pin_eint_map[MT_GPIO_BASE_MAX] = {
-
-};
-
 static int mtk_gpio_request(struct gpio_chip *chip, unsigned offset)
 {
 	return mt_set_gpio_mode_base(offset, 0);
