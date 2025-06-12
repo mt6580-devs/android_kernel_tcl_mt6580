@@ -419,17 +419,6 @@ static int freqhopping_debug_proc_open(struct inode *inode, struct file *file)
 	return single_open(file, freqhopping_debug_proc_read, NULL);
 }
 
-static int freqhopping_dramc_proc_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, g_p_fh_hal_drv->proc.dramc_read, NULL);
-}
-
-static ssize_t freqhopping_dramc_proc_write(struct file *file, const char *buffer, size_t count,
-					    loff_t *data)
-{
-	return (ssize_t) (g_p_fh_hal_drv->proc.dramc_write(file, buffer, count, data));
-}
-
 static int freqhopping_dvfs_proc_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, g_p_fh_hal_drv->proc.dvfs_read, NULL);
