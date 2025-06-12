@@ -1663,7 +1663,7 @@ static inline int adopt_CAMERA_HW_CheckIsAlive(void)
 	MUINT32 sensorID = 0;
 	MUINT32 retLen = 0;
 	MSDK_SENSOR_RESOLUTION_INFO_STRUCT sensorResolution[2], *psensorResolution[2];
-	MUINT32 curr_sensor_id;
+	MUINT32 curr_sensor_id = 0;
 
 	KD_IMGSENSOR_PROFILE_INIT();
 	/* power on sensor */
