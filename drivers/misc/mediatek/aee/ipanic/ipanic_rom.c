@@ -167,10 +167,6 @@ const struct ipanic_dt_op ipanic_dt_ops[] = {
 	{"reserved", 0, NULL},
 };
 
-static const char IPANIC_DT_STR[][16] = {"XXXXXXXXX", "XXXXXXXXXX",
-	"XXXXXXXX", "XXXXXXXXXX", "XXXXXXXXX" };
-static const char IPANIC_ERR_MSG[][16] = { "unaligned", "blk alignment" };
-
 static struct ipanic_header ipanic_hdr, *iheader;
 
 /* data: indicate dump scope; buffer: dump to; sz_buf: buffer size;
