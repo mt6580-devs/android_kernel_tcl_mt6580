@@ -112,9 +112,6 @@ static int mAudio_Analog_Mic4_mode = AUDIO_ANALOGUL_MODE_ACC;
 static int mAudio_Vow_Analog_Func_Enable;
 static int mAudio_Vow_Digital_Func_Enable;
 
-/* static int TrimOffset = 2048; */
-static const int DC1unit_in_uv = 19184;	/* in uv with 0DB */
-static const int DC1devider = 8;	/* in uv */
 /* Headphone DC calibration */
 static int mHpLeftDcCalibration;
 static int mHpRightDcCalibration;
@@ -132,7 +129,6 @@ static bool mSpeaker_Ocflag;
 #endif
 static int mAdc_Power_Mode;
 static unsigned int dAuxAdcChannel = 16;
-static const int mDcOffsetTrimChannel = 9;
 static bool mInitCodec;
 
 static int reg_AFE_VOW_CFG0 = 0x0000;	/* VOW AMPREF Setting */

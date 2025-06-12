@@ -70,14 +70,7 @@
 #include <linux/dma-mapping.h>
 
 static AFE_MEM_CONTROL_T *pHp_impedance_MemControl;
-static const int DCoffsetDefault = 1500;	/* 95: 1622 */
-static const int DCoffsetVariance = 2;	/* 95: 90  // 5% */
 
-static const int mDcRangestep = 7;
-static const int HpImpedancePhase1Step = 150;
-static const int HpImpedancePhase2Step = 400;
-static const int HpImpedancePhase1AdcValue = 1200;
-static const int HpImpedancePhase2AdcValue = 7200;
 static struct snd_dma_buffer *Dl1_Playback_dma_buf;
 
 /*
